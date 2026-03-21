@@ -83,24 +83,11 @@
                     </div>
 
                     <div>
-                        <label for="clave_institucional" class="block text-sm font-semibold text-slate-700 mb-2">Clave institucional</label>
-                        <input type="text" name="clave_institucional" id="clave_institucional" placeholder="Ej. A12345678" value="{{ old('clave_institucional') }}" required
+                        <label for="clave_institucional" class="block text-sm font-semibold text-slate-700 mb-2">Clave
+                            institucional</label>
+                        <input type="text" name="clave_institucional" id="clave_institucional"
+                            placeholder="Ej. A12345678" value="{{ old('clave_institucional') }}" required
                             class="w-full rounded-xl border-slate-200 bg-slate-50 px-4 py-3 text-sm focus:border-indigo-500 focus:ring-indigo-500 transition-all shadow-sm">
-                    </div>
-
-
-
-                    <!-- Si el modelo de datos lleva rol -->
-                    <div>
-                        <label for="rol" class="block text-sm font-semibold text-slate-700 mb-2">Rol</label>
-                        <select name="rol" id="rol" required
-                            class="w-full rounded-xl border-slate-200 bg-slate-50 px-4 py-3 text-sm focus:border-indigo-500 focus:ring-indigo-500 transition-all shadow-sm">
-                            <option value="" disabled selected>Selecciona un rol</option>
-                            <option value="admin" {{ old('rol') == 'admin' ? 'selected' : '' }}>Administrador</option>
-                            <option value="estudiante" {{ old('rol') == 'estudiante' ? 'selected' : '' }}>Estudiante
-                            </option>
-                            <option value="maestro" {{ old('rol') == 'maestro' ? 'selected' : '' }}>Maestro</option>
-                        </select>
                     </div>
 
                     <div>
@@ -123,7 +110,7 @@
 
                     <div class="text-center mt-6">
                         <p class="text-sm text-slate-500">¿Ya tienes cuenta?
-                            <a href="{{ route('index.login') ?? '#' }}"
+                            <a href="{{ route('login') ?? '#' }}"
                                 class="font-semibold text-indigo-600 hover:text-indigo-500 transition-colors">Inicia
                                 sesión aquí</a>
                         </p>

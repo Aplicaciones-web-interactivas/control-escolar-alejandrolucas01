@@ -4,49 +4,22 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Panel Estudiante - Control Escolar</title>
+    <title>Control Escolar</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 
 <body class="bg-[#f8fafc] text-[#1e293b] antialiased font-sans min-h-screen flex flex-col">
 
     <!-- Navbar -->
-    <nav class="bg-white/80 backdrop-blur-md border-b border-slate-200 sticky top-0 z-50">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between h-16 items-center">
-                <div class="flex items-center gap-3">
-                    <div
-                        class="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center text-white font-bold shadow-md">
-                        CE
-                    </div>
-                    <span class="font-bold text-xl tracking-tight text-slate-900">Control Escolar</span>
-                </div>
-                <div class="flex items-center gap-4">
-                    <span class="text-sm font-medium text-slate-600 hidden sm:inline-block">Panel de Estudiante</span>
+    @include('layouts.navbar')
 
-                    <form action="{{ route('logout') ?? '#' }}" method="POST" class="inline">
-                        @csrf
-                        <button type="submit"
-                            class="text-sm font-medium text-rose-500 hover:text-rose-700 transition-colors bg-rose-50 hover:bg-rose-100 px-3 py-1.5 rounded-lg flex items-center gap-2">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
-                                stroke="currentColor" stroke-width="2">
-                                <path stroke-linecap="round" stroke-linejoin="round"
-                                    d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-                            </svg>
-                            <span class="hidden sm:inline">Cerrar Sesión</span>
-                        </button>
-                    </form>
-                </div>
-            </div>
-        </div>
-    </nav>
 
-    <main class="flex-grow max-w-7xl mx-auto px-4 py-8 sm:px-6 lg:px-8 w-full">
+    <main class="flex-grow max-w-[85%] mx-auto px-4 py-12 sm:px-6 lg:px-8 w-full">
 
         <!-- Welcome Section -->
         <div class="mb-8">
             <h1 class="text-3xl font-extrabold tracking-tight text-slate-900 sm:text-4xl text-center sm:text-left">
-                Hola, {{ Auth::user()->name ?? 'Estudiante' }} 🎓
+                Inscripciones🎓
             </h1>
             <p class="mt-2 text-lg text-slate-500 text-center sm:text-left">
                 Revisa los grupos disponibles y realiza tu inscripción.
@@ -121,6 +94,8 @@
                             </th>
                             <th class="py-4 px-6 text-xs font-semibold text-slate-500 uppercase tracking-wider">Horario
                             </th>
+                            <th class="py-4 px-6 text-xs font-semibold text-slate-500 uppercase tracking-wider">Docente
+                            </th>
                             <th
                                 class="py-4 px-6 text-xs font-semibold text-slate-500 uppercase tracking-wider text-right">
                                 Acción</th>
@@ -146,18 +121,29 @@
                                             - {{ \Carbon\Carbon::parse($grupo->hora_fin)->format('H:i') }}</span>
                                     </div>
                                 </td>
+                                <td class="py-4 px-6">
+                                    <div class="text-sm font-semibold text-indigo-600">
+                                        {{ $grupo->docente_nombre ?? 'No asignado' }}
+                                    </div>
+                                </td>
                                 <td class="py-4 px-6 text-right">
                                     @if (in_array($grupo->grupo_id, $misInscripciones))
-                                        <!-- Ya inscrito -->
-                                        <span
-                                            class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium bg-emerald-50 text-emerald-700 border border-emerald-200">
-                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none"
-                                                viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                                <path stroke-linecap="round" stroke-linejoin="round"
-                                                    d="M5 13l4 4L19 7" />
-                                            </svg>
-                                            Inscrito
-                                        </span>
+                                        <!-- Botón de Dar de Baja -->
+                                        <form action="{{ route('delete.my.inscripcion') }}" method="POST"
+                                            class="inline-block" onsubmit="return confirm('¿Estás seguro de que deseas darte de baja de este grupo?')">
+                                            @csrf
+                                            @method('DELETE')
+                                            <input type="hidden" name="grupo_id" value="{{ $grupo->grupo_id }}">
+                                            <button type="submit"
+                                                class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium bg-rose-50 text-rose-700 border border-rose-200 hover:bg-rose-100 transition-all">
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none"
+                                                    viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                                        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                                </svg>
+                                                Dar de baja
+                                            </button>
+                                        </form>
                                     @else
                                         <!-- Botón de Inscribir -->
                                         <form action="{{ route('save.inscripcion') }}" method="POST"
@@ -181,7 +167,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="4" class="py-12 text-center">
+                                <td colspan="5" class="py-12 text-center">
                                     <div class="flex flex-col items-center justify-center text-slate-400">
                                         <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 mb-3 text-slate-300"
                                             fill="none" viewBox="0 0 24 24" stroke="currentColor"

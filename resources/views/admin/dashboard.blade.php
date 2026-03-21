@@ -11,44 +11,15 @@
 <body class="bg-[#f8fafc] text-[#1e293b] antialiased font-sans min-h-screen flex flex-col">
 
     <!-- Navbar (Misma estructura) -->
-    <nav class="bg-white/80 backdrop-blur-md border-b border-slate-200 sticky top-0 z-50">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between h-16 items-center">
-                <div class="flex items-center gap-3">
-                    <div
-                        class="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center text-white font-bold shadow-md">
-                        CE
-                    </div>
-                    <span class="font-bold text-xl tracking-tight text-slate-900">Control Escolar</span>
-                </div>
-                <div class="flex items-center gap-4">
-                    <span class="text-sm font-medium text-slate-600 hidden sm:inline-block">Panel de
-                        Administración</span>
+    @include('layouts.navbar')
 
-                    <!-- Botón Cerrar Sesión (Opcional, ya que tienes la ruta logout lista) -->
-                    <form action="{{ route('logout') ?? '#' }}" method="POST" class="inline">
-                        @csrf
-                        <button type="submit"
-                            class="text-sm font-medium text-rose-500 hover:text-rose-700 transition-colors bg-rose-50 hover:bg-rose-100 px-3 py-1.5 rounded-lg flex items-center gap-2">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
-                                stroke="currentColor" stroke-width="2">
-                                <path stroke-linecap="round" stroke-linejoin="round"
-                                    d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-                            </svg>
-                            <span class="hidden sm:inline">Cerrar Sesión</span>
-                        </button>
-                    </form>
-                </div>
-            </div>
-        </div>
-    </nav>
 
-    <main class="flex-grow max-w-7xl mx-auto px-4 py-12 sm:px-6 lg:px-8 w-full">
+    <main class="flex-grow max-w-[85%] mx-auto px-4 py-12 sm:px-6 lg:px-8 w-full">
 
         <!-- Welcome Section -->
         <div class="mb-12">
             <h1 class="text-3xl font-extrabold tracking-tight text-slate-900 sm:text-4xl text-center sm:text-left">
-                Hola, Administrador 👋
+                Buenas Buenaaaas 👋
             </h1>
             <p class="mt-2 text-lg text-slate-500 text-center sm:text-left">
                 Bienvenido al panel principal. ¿Qué deseas gestionar el día de hoy?
@@ -160,7 +131,8 @@
                 </div>
 
                 <h2 class="text-2xl font-bold text-slate-900 mb-2">Grupos</h2>
-                <p class="text-slate-500 text-sm mb-6 flex-grow relative z-10">Administra los grupos escolares, edita sus datos y consulta las listas de estudiantes inscritos.</p>
+                <p class="text-slate-500 text-sm mb-6 flex-grow relative z-10">Administra los grupos escolares, edita
+                    sus datos y consulta las listas de estudiantes inscritos.</p>
 
                 <div
                     class="mt-auto w-full inline-flex items-center justify-center sm:justify-start gap-2 text-cyan-600 font-semibold text-sm group-hover:text-cyan-700 transition-colors">

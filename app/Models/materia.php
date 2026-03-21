@@ -10,4 +10,9 @@ class materia extends Model
         'nombre',
         'clave',
     ];
+    public function horarios()
+    {
+        return $this->hasMany(horario::class);
+    }
 }
+

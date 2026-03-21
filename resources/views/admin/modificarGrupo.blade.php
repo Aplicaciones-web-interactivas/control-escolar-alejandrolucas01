@@ -11,23 +11,8 @@
 <body class="bg-[#f8fafc] text-[#1e293b] antialiased font-sans min-h-screen flex flex-col">
 
     <!-- Navbar -->
-    <nav class="bg-white/80 backdrop-blur-md border-b border-slate-200 sticky top-0 z-50">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between h-16 items-center">
-                <div class="flex items-center gap-3">
-                    <div
-                        class="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center text-white font-bold shadow-md">
-                        CE
-                    </div>
-                    <span class="font-bold text-xl tracking-tight text-slate-900">Control Escolar</span>
-                </div>
-                <div>
-                    <a href="{{ route('index.grupos') }}"
-                        class="text-sm font-medium text-slate-500 hover:text-indigo-600 transition-colors">Cancelar y Volver</a>
-                </div>
-            </div>
-        </div>
-    </nav>
+    @include('layouts.navbar')
+
 
     <main class="max-w-3xl mx-auto px-4 py-12 sm:px-6 lg:px-8 w-full">
 

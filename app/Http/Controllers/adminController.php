@@ -5,6 +5,9 @@ namespace App\Http\Controllers;
 use App\Models\materia;
 use App\Models\horario;
 use App\Models\grupo;
+use App\Models\User;
+use App\Models\inscripcion;
+use App\Models\calificacion;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -39,15 +42,30 @@ class adminController extends Controller
 
     public function deleteMateria($id)
     {
-        $materiaeliminar = materia::find($id);
-        if ($materiaeliminar != null) {
-            $materiaeliminar->delete();
+        $materia = materia::with('horarios.grupos.inscripciones')->find($id);
+        
+        if ($materia) {
+            \Illuminate\Support\Facades\DB::transaction(function () use ($materia) {
+                foreach ($materia->horarios as $horario) {
+                    foreach ($horario->grupos as $grupo) {
+                        // Borrar todas las inscripciones del grupo
+                        $grupo->inscripciones()->delete();
+                        // Borrar el grupo
+                        $grupo->delete();
+                    }
+                    // Borrar el horario
+                    $horario->delete();
+                }
+                // Finalmente borrar la materia
+                $materia->delete();
+            });
         } else {
             return redirect()->back()->withErrors('Materia no encontrada');
         }
 
-        return redirect()->back();
+        return redirect()->back()->with('success', 'Materia y todos sus registros relacionados (horarios, grupos e inscripciones) han sido eliminados.');
     }
+
 
     public function editMateria($id)
     {
@@ -76,13 +94,15 @@ class adminController extends Controller
         if (!$materia) {
             return redirect()->back()->withErrors('Materia no encontrada');
         }
-        return view('admin.regHorario', compact('materia'));
+        $usuarios = User::all();
+        return view('admin.regHorario', compact('materia', 'usuarios'));
     }
 
     public function saveHorario(Request $request)
     {
         $request->validate([
             'materia_id' => 'required|exists:materias,id',
+            'user_id' => 'required|exists:users,id',
             'dias' => 'required|array|min:1',
             'dias.*' => 'string',
             'hora_inicio' => 'required',
@@ -93,7 +113,7 @@ class adminController extends Controller
 
         horario::create([
             'materia_id' => $request->materia_id,
-            'user_id' => Auth::id(), // Guardamos el id del usuario que lo registra
+            'user_id' => $request->user_id,
             'dia' => $diasString,
             'hora_inicio' => $request->hora_inicio,
             'hora_fin' => $request->hora_fin,
@@ -104,7 +124,7 @@ class adminController extends Controller
 
     public function indexHorario()
     {
-        $horarios = horario::with('materia')
+        $horarios = horario::with(['materia', 'usuario'])
             ->join('materias', 'horarios.materia_id', '=', 'materias.id')
             ->orderBy('materias.nombre', 'asc')
             ->select('horarios.*')
@@ -112,17 +132,20 @@ class adminController extends Controller
         return view('admin.horario', compact('horarios'));
     }
 
+
     public function editHorario($id)
     {
         $horario = horario::find($id);
         $materias = materia::all();
-        return view('admin.modificarHorario', compact('horario', 'materias'));
+        $usuarios = User::all();
+        return view('admin.modificarHorario', compact('horario', 'materias', 'usuarios'));
     }
 
     public function updateHorario(Request $request, $id)
     {
         $request->validate([
             'materia_id' => 'required|exists:materias,id',
+            'user_id' => 'required|exists:users,id',
             'dias' => 'required|array|min:1',
             'hora_inicio' => 'required',
             'hora_fin' => 'required',
@@ -131,6 +154,7 @@ class adminController extends Controller
         $horario = horario::find($id);
         $horario->update([
             'materia_id' => $request->materia_id,
+            'user_id' => $request->user_id,
             'dia' => implode(', ', $request->dias),
             'hora_inicio' => $request->hora_inicio,
             'hora_fin' => $request->hora_fin,
@@ -148,29 +172,41 @@ class adminController extends Controller
     public function createGrupo($horario_id)
     {
         $horario = horario::with('materia')->find($horario_id);
-        return view('admin.regGrupo', compact('horario'));
+        
+        // Obtenemos el próximo ID aproximado para el preview
+        $nextId = \Illuminate\Support\Facades\DB::select("SHOW TABLE STATUS LIKE 'grupos'")[0]->Auto_increment;
+        $previewNombre = ($horario->materia->clave ?? 'MAT') . '-' . $nextId;
+
+        return view('admin.regGrupo', compact('horario', 'previewNombre'));
     }
 
     public function saveGrupo(Request $request)
     {
         $request->validate([
-            'nombre' => 'required|string|max:255',
             'horario_id' => 'required|exists:horarios,id',
         ]);
 
-        grupo::create([
-            'nombre' => $request->nombre,
+        // Creamos el grupo con un nombre temporal
+        $grupo = grupo::create([
+            'nombre' => 'TEMPORAL',
             'horario_id' => $request->horario_id,
         ]);
 
-        return redirect()->route('index.horario')->with('success', 'Grupo creado correctamente');
+        // Ahora que tenemos el ID real, actualizamos el nombre
+        $horario = horario::with('materia')->find($request->horario_id);
+        $nombreFinal = ($horario->materia->clave ?? 'MAT') . '-' . $grupo->id;
+        
+        $grupo->update(['nombre' => $nombreFinal]);
+
+        return redirect()->route('index.horario')->with('success', "Grupo {$nombreFinal} creado correctamente");
     }
 
     public function indexGrupos()
     {
-        $grupos = grupo::with(['horario.materia'])->get();
+        $grupos = grupo::with(['horario.materia', 'horario.usuario'])->get();
         return view('admin.grupos', compact('grupos'));
     }
+
 
     public function editGrupo($id)
     {
@@ -200,7 +236,66 @@ class adminController extends Controller
 
     public function viewInscripciones($grupo_id)
     {
-        $grupo = grupo::with(['horario.materia', 'inscripciones.usuario'])->find($grupo_id);
+        $grupo = grupo::with(['horario.materia', 'horario.usuario', 'inscripciones.usuario'])->find($grupo_id);
+        
+        // Adjuntamos la calificación de este grupo a cada inscripción
+        foreach ($grupo->inscripciones as $inscripcion) {
+            $inscripcion->nota = calificacion::where('grupo_id', $grupo_id)
+                                          ->where('usuario_id', $inscripcion->usuario_id)
+                                          ->first();
+        }
+
         return view('admin.inscripciones', compact('grupo'));
+    }
+
+    public function deleteInscripcion($id)
+    {
+        $inscripcion = inscripcion::find($id);
+        
+        if ($inscripcion) {
+            $inscripcion->delete();
+            return redirect()->back()->with('success', 'El alumno ha sido dado de baja del grupo correctamente.');
+        }
+
+        return redirect()->back()->withErrors('No se pudo encontrar la inscripción.');
+    }
+
+    public function createCalificacion($inscripcion_id)
+    {
+        $inscripcion = inscripcion::with(['usuario', 'grupo.horario.materia'])->find($inscripcion_id);
+        
+        if (!$inscripcion) {
+            return redirect()->back()->withErrors('Inscripción no encontrada.');
+        }
+
+        return view('admin.calificar', compact('inscripcion'));
+    }
+
+    public function saveCalificacion(Request $request)
+    {
+        $request->validate([
+            'grupo_id' => 'required|exists:grupos,id',
+            'usuario_id' => 'required|exists:users,id',
+            'parcial1' => 'required|numeric|min:0|max:10',
+            'parcial2' => 'required|numeric|min:0|max:10',
+            'parcial3' => 'required|numeric|min:0|max:10',
+        ]);
+
+        // Calculamos el promedio para guardarlo en la columna única existente
+        $promedio = ($request->parcial1 + $request->parcial2 + $request->parcial3) / 3;
+
+        // Buscamos si ya existe una calificación o creamos una nueva
+        calificacion::updateOrCreate(
+            [
+                'grupo_id' => $request->grupo_id,
+                'usuario_id' => $request->usuario_id
+            ],
+            [
+                'calificacion' => $promedio
+            ]
+        );
+
+        return redirect()->route('view.inscripciones', $request->grupo_id)
+            ->with('success', 'Calificaciones guardadas y promedio actualizado exitosamente.');
     }
 }

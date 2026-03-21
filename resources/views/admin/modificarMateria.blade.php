@@ -12,29 +12,8 @@
     class="bg-gradient-to-br from-indigo-50 via-white to-cyan-50 min-h-screen text-slate-800 font-sans antialiased flex flex-col justify-center py-12">
 
     <!-- Navbar -->
-    <nav class="bg-white/80 backdrop-blur-md border-b border-slate-200 fixed top-0 w-full z-50">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between h-16 items-center">
-                <div class="flex items-center gap-3">
-                    <div
-                        class="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center text-white font-bold shadow-md">
-                        CE
-                    </div>
-                    <span class="font-bold text-xl tracking-tight text-slate-900">Control Escolar</span>
-                </div>
-                <div>
-                    <a href="{{ route('index.materia') }}"
-                        class="text-sm font-medium text-slate-500 hover:text-indigo-600 transition-colors flex items-center gap-1">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
-                            stroke="currentColor" stroke-width="2">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-                        </svg>
-                        Volver al Catálogo
-                    </a>
-                </div>
-            </div>
-        </div>
-    </nav>
+    @include('layouts.navbar')
+
 
     <main class="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 w-full mt-16">
 

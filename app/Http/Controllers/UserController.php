@@ -16,13 +16,15 @@ class UserController extends Controller
         $gruposDisponibles = DB::table('grupos')
             ->join('horarios', 'grupos.horario_id', '=', 'horarios.id')
             ->join('materias', 'horarios.materia_id', '=', 'materias.id')
+            ->leftJoin('users', 'horarios.user_id', '=', 'users.id')
             ->select(
                 'grupos.id as grupo_id',
                 'grupos.nombre as grupo_nombre',
                 'materias.nombre as materia_nombre',
                 'horarios.dia',
                 'horarios.hora_inicio',
-                'horarios.hora_fin'
+                'horarios.hora_fin',
+                'users.name as docente_nombre'
             )
             ->get();
 
@@ -56,5 +58,23 @@ class UserController extends Controller
         }
 
         return back()->with('error', 'Ya estás inscrito en este grupo.');
+    }
+
+    public function deleteInscripcion(Request $request)
+    {
+        $request->validate([
+            'grupo_id' => 'required|exists:grupos,id',
+        ]);
+
+        $inscripcion = inscripcion::where('usuario_id', Auth::id())
+            ->where('grupo_id', $request->grupo_id)
+            ->first();
+
+        if ($inscripcion) {
+            $inscripcion->delete();
+            return back()->with('success', 'Te has dado de baja del grupo correctamente.');
+        }
+
+        return back()->with('error', 'No se encontró tu inscripción en este grupo.');
     }
 }

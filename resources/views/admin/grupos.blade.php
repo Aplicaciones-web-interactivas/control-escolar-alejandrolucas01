@@ -11,39 +11,10 @@
 <body class="bg-[#f8fafc] text-[#1e293b] antialiased font-sans min-h-screen flex flex-col">
 
     <!-- Navbar -->
-    <nav class="bg-white/80 backdrop-blur-md border-b border-slate-200 sticky top-0 z-50">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between h-16 items-center">
-                <div class="flex items-center gap-3">
-                    <div
-                        class="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center text-white font-bold shadow-md">
-                        CE
-                    </div>
-                    <span class="font-bold text-xl tracking-tight text-slate-900">Control Escolar</span>
-                </div>
-                <div class="flex items-center gap-4">
-                    <a href="{{ route('index.admin') }}"
-                        class="text-sm font-medium text-slate-500 hover:text-indigo-600 transition-colors">Volver al
-                        Dashboard</a>
+    @include('layouts.navbar')
 
-                    <form action="{{ route('logout') }}" method="POST" class="inline">
-                        @csrf
-                        <button type="submit"
-                            class="text-sm font-medium text-rose-500 hover:text-rose-700 transition-colors bg-rose-50 hover:bg-rose-100 px-3 py-1.5 rounded-lg flex items-center gap-2">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
-                                stroke="currentColor" stroke-width="2">
-                                <path stroke-linecap="round" stroke-linejoin="round"
-                                    d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-                            </svg>
-                            <span class="hidden sm:inline">Cerrar Sesión</span>
-                        </button>
-                    </form>
-                </div>
-            </div>
-        </div>
-    </nav>
 
-    <main class="flex-grow max-w-7xl mx-auto px-4 py-8 sm:px-6 lg:px-8 w-full">
+    <main class="flex-grow max-w-[85%] mx-auto px-4 py-8 sm:px-6 lg:px-8 w-full">
 
         <!-- Header Section -->
         <div class="mb-8 flex flex-col sm:flex-row justify-between items-center gap-4">
@@ -55,14 +26,14 @@
                     Administra los grupos escolares, sus horarios y consulta inscripciones.
                 </p>
             </div>
-            <a href="{{ route('index.horario') }}"
-                class="bg-indigo-600 text-white px-6 py-2.5 rounded-xl font-bold shadow-lg shadow-indigo-200 hover:bg-indigo-700 transition-all transform hover:-translate-y-0.5 flex items-center gap-2">
+            <a href="{{ route('index.user') }}"
+                class="bg-rose-600 text-white px-6 py-2.5 rounded-xl font-bold shadow-lg shadow-rose-200 hover:bg-rose-700 transition-all transform hover:-translate-y-0.5 flex items-center gap-2 border-2 border-rose-700">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
                     <path fill-rule="evenodd"
                         d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z"
                         clip-rule="evenodd" />
                 </svg>
-                Registrar Nuevo Grupo
+                Inscribir Materias
             </a>
         </div>
 
@@ -102,6 +73,10 @@
                             <th class="py-4 px-6 text-xs font-semibold text-slate-500 uppercase tracking-wider">Horario
                             </th>
                             <th
+                                class="py-4 px-6 text-xs font-semibold text-slate-500 uppercase tracking-wider text-center">
+                                Docente
+                            </th>
+                            <th
                                 class="py-4 px-6 text-xs font-semibold text-slate-500 uppercase tracking-wider text-right">
                                 Acciones</th>
                         </tr>
@@ -115,7 +90,7 @@
                                     <div class="text-xs text-slate-400">{{ $grupo->horario->materia->clave ?? '' }}
                                     </div>
                                 </td>
-                                <td class="py-4 px-6">
+                                <td class="py-4 px-6 text-center">
                                     <span
                                         class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-cyan-100 text-cyan-800 border border-cyan-200">
                                         {{ $grupo->nombre }}
@@ -130,6 +105,15 @@
                                             - {{ date('H:i', strtotime($grupo->horario->hora_fin)) }}</span>
                                     </div>
                                 </td>
+                                <td class="py-4 px-6 text-center">
+                                    <div class="flex flex-col items-center">
+                                        <span
+                                            class="text-sm font-semibold text-indigo-600">{{ $grupo->horario->usuario->name ?? 'No asignado' }}</span>
+                                        <span
+                                            class="text-[10px] text-slate-400 uppercase tracking-tighter">{{ $grupo->horario->usuario->clave_institucional ?? '' }}</span>
+                                    </div>
+                                </td>
+
                                 <td class="py-4 px-6 text-right">
                                     <div class="flex justify-end items-center gap-2">
                                         <!-- Ver Inscripciones -->
@@ -181,8 +165,8 @@
                             <tr>
                                 <td colspan="4" class="py-12 text-center text-slate-400">
                                     <svg xmlns="http://www.w3.org/2000/svg"
-                                        class="h-12 w-12 mx-auto mb-3 text-slate-300" fill="none"
-                                        viewBox="0 0 24 24" stroke="currentColor">
+                                        class="h-12 w-12 mx-auto mb-3 text-slate-300" fill="none" viewBox="0 0 24 24"
+                                        stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round"
                                             d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
                                     </svg>

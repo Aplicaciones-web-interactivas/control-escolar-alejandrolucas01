@@ -12,6 +12,10 @@ class AuthController extends Controller
     // Mostrar vista de registro
     public function indexRegister()
     {
+        if (Auth::check()) {
+            return redirect()->route('index.admin');
+        }
+
         return view('auth.Register');
     }
 
@@ -21,23 +25,25 @@ class AuthController extends Controller
         $request->validate([
             'nombre' => 'required|string|max:255',
             'clave_institucional' => 'required|string|max:255|unique:users,clave_institucional',
-            'rol' => 'required|string',
             'password' => 'required|string|min:8',
         ]);
 
         User::create([
             'name' => $request->nombre,
             'clave_institucional' => $request->clave_institucional,
-            'rol' => $request->rol,
             'password' => Hash::make($request->password),
         ]);
 
-        return redirect()->route('index.login')->with('success', 'Usuario registrado correctamente. Inicia sesión ahora.');
+        return redirect()->route('login')->with('success', 'Usuario registrado correctamente. Inicia sesión ahora.');
     }
 
     // Mostrar vista de login
     public function indexLogin()
     {
+        if (Auth::check()) {
+            return redirect()->route('index.admin');
+        }
+
         return view('auth.Auth');
     }
 
@@ -57,11 +63,7 @@ class AuthController extends Controller
         if (Auth::attempt($credentials)) {
             $request->session()->regenerate();
 
-            if (Auth::user()->clave_institucional == 'admin') {
-                return redirect()->route('index.admin');
-            } else {
-                return redirect()->route('index.user');
-            }
+            return redirect()->route('index.admin');
         }
 
         return back()->with('error', 'Las credenciales no coinciden con nuestros registros.')->onlyInput('clave_institucional');
@@ -75,6 +77,6 @@ class AuthController extends Controller
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
-        return redirect()->route('index.login');
+        return redirect()->route('login');
     }
 }

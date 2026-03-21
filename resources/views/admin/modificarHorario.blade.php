@@ -7,19 +7,8 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 <body class="bg-gradient-to-br from-indigo-50 via-white to-cyan-50 min-h-screen text-slate-800 font-sans antialiased">
-    <nav class="bg-white/80 backdrop-blur-md border-b border-slate-200 sticky top-0 z-50">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between h-16 items-center">
-                <div class="flex items-center gap-3">
-                    <div class="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center text-white font-bold shadow-md">CE</div>
-                    <span class="font-bold text-xl tracking-tight text-slate-900">Control Escolar</span>
-                </div>
-                <div>
-                    <a href="{{ route('index.horario') }}" class="text-sm font-medium text-slate-500 hover:text-indigo-600 transition-colors">Cancelar y Volver</a>
-                </div>
-            </div>
-        </div>
-    </nav>
+    @include('layouts.navbar')
+
 
     <main class="max-w-3xl mx-auto px-4 py-12 sm:px-6 lg:px-8">
         <div class="bg-white rounded-3xl shadow-xl shadow-slate-200/50 border border-slate-100 overflow-hidden">
@@ -30,6 +19,19 @@
                 <form action="{{ route('update.horario', $horario->id) }}" method="POST" class="space-y-6">
                     @csrf
                     <div>
+                        <label class="block text-sm font-semibold text-slate-700 mb-2">Asignar Docente/Usuario</label>
+                        <select name="user_id" id="user_id" required
+                            class="w-full rounded-xl border-slate-200 bg-slate-50 px-4 py-3 text-sm focus:border-indigo-500 focus:ring-indigo-500 shadow-sm transition-all focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 outline-none">
+                            <option value="">Seleccione un usuario...</option>
+                            @foreach($usuarios as $usuario)
+                                <option value="{{ $usuario->id }}" {{ $horario->user_id == $usuario->id ? 'selected' : '' }}>
+                                    {{ $usuario->name }} ({{ $usuario->clave_institucional }})
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    <div>
                         <label class="block text-sm font-semibold text-slate-700 mb-2">Materia</label>
                         <select name="materia_id" class="w-full rounded-xl border-slate-200 bg-slate-50 px-4 py-3 text-sm focus:border-indigo-500 focus:ring-indigo-500 shadow-sm" required>
                             @foreach($materias as $materia)
@@ -39,6 +41,7 @@
                             @endforeach
                         </select>
                     </div>
+
 
                     <div>
                         <label class="block text-sm font-semibold text-slate-700 mb-3">Días de clase</label>
