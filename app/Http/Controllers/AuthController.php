@@ -13,6 +13,13 @@ class AuthController extends Controller
     public function indexRegister()
     {
         if (Auth::check()) {
+            $user = Auth::user();
+            if ($user->rol === 'alumno' || $user->rol === 'estudiante') {
+                return redirect()->route('index.user');
+            }
+            if ($user->rol === 'profesor') {
+                return redirect()->route('index.profesor');
+            }
             return redirect()->route('index.admin');
         }
 
@@ -26,11 +33,13 @@ class AuthController extends Controller
             'nombre' => 'required|string|max:255',
             'clave_institucional' => 'required|string|max:255|unique:users,clave_institucional',
             'password' => 'required|string|min:8',
+            'rol' => 'required|in:alumno,profesor,administrador',
         ]);
 
         User::create([
             'name' => $request->nombre,
             'clave_institucional' => $request->clave_institucional,
+            'rol' => $request->rol,
             'password' => Hash::make($request->password),
         ]);
 
@@ -41,6 +50,13 @@ class AuthController extends Controller
     public function indexLogin()
     {
         if (Auth::check()) {
+            $user = Auth::user();
+            if ($user->rol === 'alumno' || $user->rol === 'estudiante') {
+                return redirect()->route('index.user');
+            }
+            if ($user->rol === 'profesor') {
+                return redirect()->route('index.profesor');
+            }
             return redirect()->route('index.admin');
         }
 
@@ -62,6 +78,14 @@ class AuthController extends Controller
 
         if (Auth::attempt($credentials)) {
             $request->session()->regenerate();
+
+            $user = Auth::user();
+            if ($user->rol === 'alumno' || $user->rol === 'estudiante') {
+                return redirect()->route('index.user');
+            }
+            if ($user->rol === 'profesor') {
+                return redirect()->route('index.profesor');
+            }
 
             return redirect()->route('index.admin');
         }

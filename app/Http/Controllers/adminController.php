@@ -22,7 +22,7 @@ class adminController extends Controller
     {
         // Usamos try-catch por si la tabla 'materias' no existe aún
         try {
-            $materias = materia::all();
+            $materias = materia::paginate(5);
         } catch (\Exception $e) {
             $materias = collect(); // Mandamos una lista vacía si falla la DB
         }
@@ -128,7 +128,7 @@ class adminController extends Controller
             ->join('materias', 'horarios.materia_id', '=', 'materias.id')
             ->orderBy('materias.nombre', 'asc')
             ->select('horarios.*')
-            ->get();
+            ->paginate(5);
         return view('admin.horario', compact('horarios'));
     }
 
@@ -203,7 +203,7 @@ class adminController extends Controller
 
     public function indexGrupos()
     {
-        $grupos = grupo::with(['horario.materia', 'horario.usuario'])->get();
+        $grupos = grupo::with(['horario.materia', 'horario.usuario'])->paginate(5);
         return view('admin.grupos', compact('grupos'));
     }
 
@@ -236,16 +236,20 @@ class adminController extends Controller
 
     public function viewInscripciones($grupo_id)
     {
-        $grupo = grupo::with(['horario.materia', 'horario.usuario', 'inscripciones.usuario'])->find($grupo_id);
+        $grupo = grupo::with(['horario.materia', 'horario.usuario'])->find($grupo_id);
         
+        $inscripciones = inscripcion::with('usuario')
+            ->where('grupo_id', $grupo_id)
+            ->paginate(5);
+            
         // Adjuntamos la calificación de este grupo a cada inscripción
-        foreach ($grupo->inscripciones as $inscripcion) {
+        foreach ($inscripciones as $inscripcion) {
             $inscripcion->nota = calificacion::where('grupo_id', $grupo_id)
                                           ->where('usuario_id', $inscripcion->usuario_id)
                                           ->first();
         }
 
-        return view('admin.inscripciones', compact('grupo'));
+        return view('admin.inscripciones', compact('grupo', 'inscripciones'));
     }
 
     public function deleteInscripcion($id)
@@ -268,7 +272,12 @@ class adminController extends Controller
             return redirect()->back()->withErrors('Inscripción no encontrada.');
         }
 
-        return view('admin.calificar', compact('inscripcion'));
+        // Cargar nota actual si existe para pre-rellenar los campos
+        $notaActual = calificacion::where('grupo_id', $inscripcion->grupo_id)
+                                 ->where('usuario_id', $inscripcion->usuario_id)
+                                 ->first();
+
+        return view('admin.calificar', compact('inscripcion', 'notaActual'));
     }
 
     public function saveCalificacion(Request $request)
@@ -276,13 +285,17 @@ class adminController extends Controller
         $request->validate([
             'grupo_id' => 'required|exists:grupos,id',
             'usuario_id' => 'required|exists:users,id',
-            'parcial1' => 'required|numeric|min:0|max:10',
-            'parcial2' => 'required|numeric|min:0|max:10',
-            'parcial3' => 'required|numeric|min:0|max:10',
+            'parcial1' => 'nullable|numeric|min:0|max:10',
+            'parcial2' => 'nullable|numeric|min:0|max:10',
+            'parcial3' => 'nullable|numeric|min:0|max:10',
         ]);
 
+        $p1 = floatval($request->parcial1);
+        $p2 = floatval($request->parcial2);
+        $p3 = floatval($request->parcial3);
+
         // Calculamos el promedio para guardarlo en la columna única existente
-        $promedio = ($request->parcial1 + $request->parcial2 + $request->parcial3) / 3;
+        $promedio = ($p1 + $p2 + $p3) / 3;
 
         // Buscamos si ya existe una calificación o creamos una nueva
         calificacion::updateOrCreate(
@@ -291,6 +304,9 @@ class adminController extends Controller
                 'usuario_id' => $request->usuario_id
             ],
             [
+                'parcial1' => $p1,
+                'parcial2' => $p2,
+                'parcial3' => $p3,
                 'calificacion' => $promedio
             ]
         );

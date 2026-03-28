@@ -26,7 +26,7 @@ class UserController extends Controller
                 'horarios.hora_fin',
                 'users.name as docente_nombre'
             )
-            ->get();
+            ->paginate(5);
 
         // Obtener inscripciones actuales del usuario para no mostrar el botón si ya está inscrito
         $misInscripciones = DB::table('inscripcions')
@@ -35,6 +35,124 @@ class UserController extends Controller
             ->toArray();
 
         return view('dashbordUser', compact('gruposDisponibles', 'misInscripciones'));
+    }
+
+    public function myInscripciones()
+    {
+        $userId = Auth::id();
+        $inscripciones = DB::table('inscripcions')
+            ->join('grupos', 'inscripcions.grupo_id', '=', 'grupos.id')
+            ->join('horarios', 'grupos.horario_id', '=', 'horarios.id')
+            ->join('materias', 'horarios.materia_id', '=', 'materias.id')
+            ->leftJoin('users as docentes', 'horarios.user_id', '=', 'docentes.id')
+            ->leftJoin('calificacions', function ($join) use ($userId) {
+                $join->on('grupos.id', '=', 'calificacions.grupo_id')
+                    ->where('calificacions.usuario_id', '=', $userId);
+            })
+            ->where('inscripcions.usuario_id', $userId)
+            ->select(
+                'inscripcions.id as id',
+                'grupos.id as grupo_id',
+                'materias.nombre as materia',
+                'grupos.nombre as grupo',
+                'horarios.dia',
+                'horarios.hora_inicio',
+                'horarios.hora_fin',
+                'docentes.name as docente',
+                'calificacions.calificacion as nota'
+            )
+            ->paginate(5);
+
+        return view('inscritas', compact('inscripciones'));
+    }
+
+    public function verActividades($grupo_id)
+    {
+        // Verificar inscripción
+        $inscrito = DB::table('inscripcions')
+            ->where('grupo_id', $grupo_id)
+            ->where('usuario_id', Auth::id())
+            ->exists();
+
+        if (!$inscrito) {
+            return back()->with('error', 'No estás inscrito en este grupo.');
+        }
+
+        $grupo = DB::table('grupos')->where('id', $grupo_id)->first();
+
+        $actividades = DB::table('actividades')
+            ->where('grupo_id', $grupo_id)
+            ->paginate(5);
+
+        foreach ($actividades as $actividad) {
+            // Verificar si el alumno ya entregó y obtener calificacion
+            $actividad->mi_entrega = DB::table('entregas')
+                ->where('actividad_id', $actividad->id)
+                ->where('usuario_id', Auth::id())
+                ->first();
+        }
+
+        return view('misActividades', compact('actividades', 'grupo'));
+    }
+
+    public function verDetallesActividad($actividad_id)
+    {
+        $actividad = DB::table('actividades')->where('id', $actividad_id)->first();
+        if (!$actividad) return back()->with('error', 'Actividad no encontrada.');
+
+        // Verificar inscripción en el grupo de la actividad
+        $inscrito = DB::table('inscripcions')
+            ->where('grupo_id', $actividad->grupo_id)
+            ->where('usuario_id', Auth::id())
+            ->exists();
+
+        if (!$inscrito) {
+            return back()->with('error', 'No tienes acceso a esta actividad.');
+        }
+
+        $grupo = DB::table('grupos')
+            ->join('horarios', 'grupos.horario_id', '=', 'horarios.id')
+            ->join('materias', 'horarios.materia_id', '=', 'materias.id')
+            ->where('grupos.id', $actividad->grupo_id)
+            ->select('grupos.*', 'materias.nombre as materia_nombre')
+            ->first();
+        
+        $actividad->archivos = DB::table('archivos_actividad')
+            ->where('actividad_id', $actividad->id)
+            ->get();
+
+        $actividad->mi_entrega = DB::table('entregas')
+            ->where('actividad_id', $actividad->id)
+            ->where('usuario_id', Auth::id())
+            ->first();
+
+        return view('detallesActividad', compact('actividad', 'grupo'));
+    }
+
+    public function saveEntrega(Request $request)
+    {
+        $request->validate([
+            'actividad_id' => 'required|exists:actividades,id',
+            'archivo' => 'required|mimes:pdf|max:10240',
+        ]);
+
+        // Guardar archivo
+        $path = $request->file('archivo')->store('entregas/pdf', 'public');
+
+        // Registrar entrega (Update or Create)
+        DB::table('entregas')->updateOrInsert(
+            [
+                'actividad_id' => $request->actividad_id,
+                'usuario_id' => Auth::id(),
+            ],
+            [
+                'ruta_archivo' => $path,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]
+        );
+
+        return back()->with('success', 'Actividad entregada correctamente.');
     }
 
     public function saveInscripcion(Request $request)
@@ -72,6 +190,7 @@ class UserController extends Controller
 
         if ($inscripcion) {
             $inscripcion->delete();
+
             return back()->with('success', 'Te has dado de baja del grupo correctamente.');
         }
 

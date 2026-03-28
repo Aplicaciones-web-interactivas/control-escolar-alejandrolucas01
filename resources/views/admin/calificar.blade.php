@@ -41,24 +41,37 @@
                         <div class="space-y-2">
                             <label for="parcial1" class="block text-sm font-bold text-slate-700">1er Parcial</label>
                             <input type="number" step="0.1" name="parcial1" id="parcial1" 
-                                class="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-lg font-bold text-indigo-600 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 outline-none transition-all shadow-sm"
-                                placeholder="0.0" min="0" max="10" required>
+                                value="{{ old('parcial1', $notaActual->parcial1 ?? '0.0') }}"
+                                class="grade-input w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-lg font-bold text-indigo-600 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 outline-none transition-all shadow-sm"
+                                placeholder="0.0" min="0" max="10">
                         </div>
 
                         <!-- Parcial 2 -->
                         <div class="space-y-2">
                             <label for="parcial2" class="block text-sm font-bold text-slate-700">2do Parcial</label>
                             <input type="number" step="0.1" name="parcial2" id="parcial2" 
-                                class="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-lg font-bold text-indigo-600 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 outline-none transition-all shadow-sm"
-                                placeholder="0.0" min="0" max="10" required>
+                                value="{{ old('parcial2', $notaActual->parcial2 ?? '0.0') }}"
+                                class="grade-input w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-lg font-bold text-indigo-600 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 outline-none transition-all shadow-sm"
+                                placeholder="0.0" min="0" max="10">
                         </div>
 
                         <!-- Parcial 3 -->
                         <div class="space-y-2">
                             <label for="parcial3" class="block text-sm font-bold text-slate-700">3er Parcial</label>
                             <input type="number" step="0.1" name="parcial3" id="parcial3" 
-                                class="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-lg font-bold text-indigo-600 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 outline-none transition-all shadow-sm"
-                                placeholder="0.0" min="0" max="10" required>
+                                value="{{ old('parcial3', $notaActual->parcial3 ?? '0.0') }}"
+                                class="grade-input w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-lg font-bold text-indigo-600 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 outline-none transition-all shadow-sm"
+                                placeholder="0.0" min="0" max="10">
+                        </div>
+                    </div>
+
+                    <div class="bg-indigo-50 rounded-2xl p-6 border border-indigo-100 flex items-center justify-between">
+                        <div>
+                            <span class="text-xs font-black text-indigo-400 uppercase tracking-widest">Promedio Final Estimado</span>
+                            <p class="text-xs text-slate-500 mt-1 font-medium">Se calcula automáticamente promediando los 3 parciales.</p>
+                        </div>
+                        <div class="text-right">
+                            <span id="promedio-final" class="text-4xl font-black text-indigo-600 leading-none">0.0</span>
                         </div>
                     </div>
 
@@ -80,5 +93,33 @@
             </div>
         </div>
     </main>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const inputs = document.querySelectorAll('.grade-input');
+            const totalDisplay = document.getElementById('promedio-final');
+
+            const calculate = () => {
+                let sum = 0;
+                let count = 0;
+                inputs.forEach(input => {
+                    const val = parseFloat(input.value);
+                    if (!isNaN(val)) {
+                        sum += val;
+                        count++;
+                    }
+                });
+                const avg = count > 0 ? (sum / 3).toFixed(1) : '0.0';
+                totalDisplay.textContent = avg;
+            };
+
+            inputs.forEach(input => {
+                input.addEventListener('input', calculate);
+            });
+
+            // Initial calculate if there's data
+            calculate();
+        });
+    </script>
 </body>
 </html>

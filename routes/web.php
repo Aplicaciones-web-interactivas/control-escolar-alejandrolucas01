@@ -18,8 +18,22 @@ Route::post('/register', [AuthController::class, 'saveRegister'])->name('save.re
 Route::middleware(['auth'])->group(function () {
     // rutas estudiante
     Route::get('/dashbordUser', [UserController::class, 'indexUser'])->name('index.user');
+    Route::get('/inscritas', [UserController::class, 'myInscripciones'])->name('my.inscripciones');
+    Route::get('/mis-actividades/{grupo_id}', [UserController::class, 'verActividades'])->name('ver.actividades');
+    Route::get('/actividad-detalles/{actividad_id}', [UserController::class, 'verDetallesActividad'])->name('ver.detallesActividad');
+    Route::post('/entregar-actividad', [UserController::class, 'saveEntrega'])->name('save.entrega');
     Route::post('/inscribir', [UserController::class, 'saveInscripcion'])->name('save.inscripcion');
     Route::delete('/donde-baja', [UserController::class, 'deleteInscripcion'])->name('delete.my.inscripcion');
+
+    // rutas profesor
+    Route::get('/dashProf', [App\Http\Controllers\ProfesorController::class, 'indexProfesor'])->name('index.profesor');
+    Route::get('/grupo-alumnos/{grupo_id}', [App\Http\Controllers\ProfesorController::class, 'verAlumnos'])->name('profesor.alumnos');
+    Route::get('/grupo-actividades/{grupo_id}', [App\Http\Controllers\ProfesorController::class, 'verActividades'])->name('profesor.actividades');
+    Route::get('/actividad-entregas/{actividad_id}', [App\Http\Controllers\ProfesorController::class, 'verEntregas'])->name('profesor.entregas');
+    Route::post('/save-actividad', [App\Http\Controllers\ProfesorController::class, 'saveActividad'])->name('save.actividad');
+    Route::post('/tarea-calificacion', [App\Http\Controllers\ProfesorController::class, 'saveTareaCalificacion'])->name('profesor.saveTareaCalificacion');
+    Route::post('/save-calificacion', [App\Http\Controllers\ProfesorController::class, 'saveCalificacion'])->name('profesor.saveCalificacion');
+    Route::delete('/profesor-baja-alumno/{inscripcion_id}', [App\Http\Controllers\ProfesorController::class, 'deleteInscripcion'])->name('profesor.deleteInscripcion');
 
     // admin
     Route::get('/dashboard', [adminController::class, 'indexAdmin'])->name('index.admin');

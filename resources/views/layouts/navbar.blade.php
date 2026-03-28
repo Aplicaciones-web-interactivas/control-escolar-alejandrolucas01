@@ -3,7 +3,7 @@
         <div class="flex justify-between h-16 items-center">
             <div class="flex items-center gap-8">
                 <!-- Logo -->
-                <a href="{{ route('index.admin') }}" class="flex items-center gap-3 group">
+                <a href="{{ (Auth::user()->rol === 'alumno' || Auth::user()->rol === 'estudiante') ? route('index.user') : (Auth::user()->rol === 'profesor' ? route('index.profesor') : route('index.admin')) }}" class="flex items-center gap-3 group">
                     <div class="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center text-white font-bold shadow-md group-hover:bg-indigo-700 transition-colors">
                         CE
                     </div>
@@ -12,22 +12,34 @@
 
                 <!-- Navigation Links -->
                 <div class="hidden md:flex items-center gap-1">
-                    <a href="{{ route('index.admin') }}" 
-                        class="px-3 py-2 rounded-lg text-sm font-medium {{ Request::routeIs('index.admin') ? 'text-indigo-600 bg-indigo-50' : 'text-slate-500 hover:text-indigo-600 hover:bg-slate-50' }} transition-all">
-                        Dashboard
-                    </a>
-                    <a href="{{ route('index.materia') }}" 
-                        class="px-3 py-2 rounded-lg text-sm font-medium {{ Request::routeIs('index.materia') ? 'text-indigo-600 bg-indigo-50' : 'text-slate-500 hover:text-indigo-600 hover:bg-slate-50' }} transition-all">
-                        Materias
-                    </a>
-                    <a href="{{ route('index.horario') }}" 
-                        class="px-3 py-2 rounded-lg text-sm font-medium {{ Request::routeIs('index.horario') ? 'text-indigo-600 bg-indigo-50' : 'text-slate-500 hover:text-indigo-600 hover:bg-slate-50' }} transition-all">
-                        Horarios
-                    </a>
-                    <a href="{{ route('index.grupos') }}" 
-                        class="px-3 py-2 rounded-lg text-sm font-medium {{ Request::routeIs('index.grupos') ? 'text-indigo-600 bg-indigo-50' : 'text-slate-500 hover:text-indigo-600 hover:bg-slate-50' }} transition-all">
-                        Grupos
-                    </a>
+                    @if(Auth::user()->rol === 'alumno' || Auth::user()->rol === 'estudiante')
+                        <a href="{{ route('index.user') }}" 
+                            class="px-3 py-2 rounded-lg text-sm font-medium {{ Request::routeIs('index.user') ? 'text-indigo-600 bg-indigo-50' : 'text-slate-500 hover:text-indigo-600 hover:bg-slate-50' }} transition-all">
+                            Inscripciones
+                        </a>
+                    @elseif(Auth::user()->rol === 'profesor')
+                        <a href="{{ route('index.profesor') }}" 
+                            class="px-3 py-2 rounded-lg text-sm font-medium {{ Request::routeIs('index.profesor') ? 'text-indigo-600 bg-indigo-50' : 'text-slate-500 hover:text-indigo-600 hover:bg-slate-50' }} transition-all">
+                            Mi Panel
+                        </a>
+                    @else
+                        <a href="{{ route('index.admin') }}" 
+                            class="px-3 py-2 rounded-lg text-sm font-medium {{ Request::routeIs('index.admin') ? 'text-indigo-600 bg-indigo-50' : 'text-slate-500 hover:text-indigo-600 hover:bg-slate-50' }} transition-all">
+                            Dashboard
+                        </a>
+                        <a href="{{ route('index.materia') }}" 
+                            class="px-3 py-2 rounded-lg text-sm font-medium {{ Request::routeIs('index.materia') ? 'text-indigo-600 bg-indigo-50' : 'text-slate-500 hover:text-indigo-600 hover:bg-slate-50' }} transition-all">
+                            Materias
+                        </a>
+                        <a href="{{ route('index.horario') }}" 
+                            class="px-3 py-2 rounded-lg text-sm font-medium {{ Request::routeIs('index.horario') ? 'text-indigo-600 bg-indigo-50' : 'text-slate-500 hover:text-indigo-600 hover:bg-slate-50' }} transition-all">
+                            Horarios
+                        </a>
+                        <a href="{{ route('index.grupos') }}" 
+                            class="px-3 py-2 rounded-lg text-sm font-medium {{ Request::routeIs('index.grupos') ? 'text-indigo-600 bg-indigo-50' : 'text-slate-500 hover:text-indigo-600 hover:bg-slate-50' }} transition-all">
+                            Grupos
+                        </a>
+                    @endif
                 </div>
             </div>
 

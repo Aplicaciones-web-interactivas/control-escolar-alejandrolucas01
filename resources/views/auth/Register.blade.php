@@ -96,6 +96,16 @@
                             class="w-full rounded-xl border-slate-200 bg-slate-50 px-4 py-3 text-sm focus:border-indigo-500 focus:ring-indigo-500 transition-all shadow-sm">
                     </div>
 
+                    <div>
+                        <label for="rol" class="block text-sm font-semibold text-slate-700 mb-2">Rol</label>
+                        <select name="rol" id="rol" required
+                            class="w-full rounded-xl border-slate-200 bg-slate-50 px-4 py-3 text-sm focus:border-indigo-500 focus:ring-indigo-500 transition-all shadow-sm">
+                            <option value="alumno">Estudiante (Alumno)</option>
+                            <option value="profesor">Profesor</option>
+                            <option value="administrador">Administrador</option>
+                        </select>
+                    </div>
+
                     <div class="pt-2">
                         <button type="submit"
                             class="w-full group relative flex justify-center items-center gap-2 py-3 px-4 border border-transparent rounded-xl shadow-sm text-sm font-bold text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-all transform hover:-translate-y-0.5">

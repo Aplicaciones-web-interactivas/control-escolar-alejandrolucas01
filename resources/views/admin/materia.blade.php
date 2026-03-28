@@ -110,7 +110,7 @@
                     </h2>
                     <span
                         class="inline-flex items-center rounded-md bg-indigo-50 px-2.5 py-1 text-xs font-semibold text-indigo-700 ring-1 ring-inset ring-indigo-700/10">
-                        {{ count($materias ?? []) }} registros
+                        {{ $materias->total() }} registros totales
                     </span>
                 </div>
 
@@ -212,6 +212,12 @@
                         </tbody>
                     </table>
                 </div>
+                <!-- Pagination -->
+                @if($materias->hasPages())
+                    <div class="px-6 py-4 border-t border-slate-100 bg-slate-50/30">
+                        {{ $materias->links() }}
+                    </div>
+                @endif
             </div>
 
         </div>
