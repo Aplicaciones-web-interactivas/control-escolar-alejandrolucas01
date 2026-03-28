@@ -34,7 +34,7 @@ class UserController extends Controller
             ->pluck('grupo_id')
             ->toArray();
 
-        return view('dashbordUser', compact('gruposDisponibles', 'misInscripciones'));
+        return view('User.dashbordUser', compact('gruposDisponibles', 'misInscripciones'));
     }
 
     public function myInscripciones()
@@ -63,7 +63,7 @@ class UserController extends Controller
             )
             ->paginate(5);
 
-        return view('inscritas', compact('inscripciones'));
+        return view('User.inscritas', compact('inscripciones'));
     }
 
     public function verActividades($grupo_id)
@@ -92,7 +92,7 @@ class UserController extends Controller
                 ->first();
         }
 
-        return view('misActividades', compact('actividades', 'grupo'));
+        return view('User.misActividades', compact('actividades', 'grupo'));
     }
 
     public function verDetallesActividad($actividad_id)
@@ -126,7 +126,7 @@ class UserController extends Controller
             ->where('usuario_id', Auth::id())
             ->first();
 
-        return view('detallesActividad', compact('actividad', 'grupo'));
+        return view('User.detallesActividad', compact('actividad', 'grupo'));
     }
 
     public function saveEntrega(Request $request)
